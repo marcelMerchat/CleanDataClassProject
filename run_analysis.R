@@ -38,9 +38,9 @@
 ## observation. We analyze the columns which are means or standard deviations
  
 fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
-download.file(fileUrl,dest="zipData.zip")
+##download.file(fileUrl,dest="zipData.zip")
 overwrite = TRUE
-unzip("zipData.zip", exdir=".")
+##unzip("zipData.zip", exdir=".")
 
 ## Add ID label to subject lists
 
@@ -58,8 +58,6 @@ colnames(subjectTest)[1] <- "ID"
 
 yTrain <-read.delim("./UCI HAR Dataset/train/y_train.txt")
 colnames(yTrain)[1] <- "Activity"
-
-len <- length(yTrain[,1])
 
 ## assign activity names
 for(i in seq_along (yTrain[,1])){
@@ -126,5 +124,49 @@ testData <- yTest
 ## Merge training and test data together
 
 all_Data = merge(      yTrain,    yTest, all = TRUE)
-print(head(all_Data))
-print(tail(all_Data))
+
+uniqueActivity <- unique(all_Data[,1])
+uniqueID <- unique(all_Data[,2])
+recordLengthVector <- all_Data[,1]
+
+temp1    <- all_Data[1:6,]
+temp2    <- all_Data[1:30,]
+report_1 <- all_Data[1:6,]
+report_2 <- all_Data[1:30,]
+
+for(i in seq_along (uniqueActivity)){
+        count <- 1
+        for(j in seq_along(recordLengthVector)){
+                if(all_Data[j,1] == uniqueActivity[i]  & !any(all_Data[j,2:8]) == "NA"){
+                        temp1[count,] <- all_Data[j, ]
+                        count <- count + 1
+                }
+        }
+        for(k in 3:8){
+                colaverage <- mean(temp1[,k], na.rm = TRUE)
+                report_1[i,k] <- colaverage
+                report_1[i,1] <- temp1[i,1] 
+                report_1[i,2] <- temp1[i,2]
+        }       
+}
+
+for(i in seq_along (uniqueID)){
+        count <- 1
+        for(j in seq_along(recordLengthVector)){
+                if(all_Data[j,2] == uniqueID[i]  & !any(all_Data[j,2:8]) == "NA"){
+                        temp2[count,] <- all_Data[j, ]
+                        count <- count + 1
+                }
+        }
+        for(k in 3:8){
+                colaverage <- mean(temp2[,k], na.rm = TRUE)
+                report_2[i,k] <- colaverage
+                report_2[i,1] <- temp2[i,1] 
+                report_2[i,2] <- temp2[i,2]
+        }       
+}
+
+report <- merge(report_2, report_1, all = TRUE)
+write.table(report, file="project_data.txt", row.name=FALSE)
+
+
